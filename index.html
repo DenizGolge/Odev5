@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste Uygulamasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Sayfa kaydırma çubuğunu daha modern hale getirmek için (opsiyonel) */
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #374151; /* gray-700 */
+            border-radius: 20px;
+            border: 3px solid #1f2937; /* gray-800 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+
+    <div class="container mx-auto max-w-3xl p-4 sm:p-8">
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl mb-8">
+            <div class="flex flex-col gap-3">
+                <input type="text" id="new-list-name-input" placeholder="New list name..." class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                <button id="create-new-list-btn" class="w-full bg-gray-900 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md transition duration-300">
+                    Create New List
+                </button>
+            </div>
+        </div>
+
+        <div id="lists-container" class="space-y-6">
+        </div>
+
+    </div>
+
+    <script>
+        const newListNameInput = document.getElementById('new-list-name-input');
+        const createNewListBtn = document.getElementById('create-new-list-btn');
+        const listsContainer = document.getElementById('lists-container');
+
+        createNewListBtn.addEventListener('click', createList);
+        
+        newListNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                createList();
+            }
+        });
+
+        listsContainer.addEventListener('click', handleListActions);
+
+        function createList() {
+            const listName = newListNameInput.value.trim(); 
+            
+            if (listName === '') {
+                alert('Lütfen bir liste adı girin.');
+                return;
+            }
+
+            const listTemplate = `
+                <div class="list-card bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-xl font-bold mb-4">${listName}</h2>
+                    
+                    <div class="flex flex-col gap-3 mb-4">
+                        <input type="text" placeholder="Add a new item..." class="item-input flex-grow bg-gray-700 border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+                        <button class="add-item-btn w-full bg-gray-900 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition duration-300">
+                            Add Item
+                        </button>
+                    </div>
+
+                    <ul class="item-list space-y-2">
+                        </ul>
+                </div>
+            `;
+
+            listsContainer.insertAdjacentHTML('beforeend', listTemplate);
+            newListNameInput.value = '';
+        }
+
+        function handleListActions(e) {
+            const target = e.target; 
+
+            if (target.classList.contains('add-item-btn')) {
+                const listCard = target.closest('.list-card'); 
+                const itemInput = listCard.querySelector('.item-input'); 
+                const itemList = listCard.querySelector('.item-list'); 
+                const itemText = itemInput.value.trim();
+
+                if (itemText !== '') {
+                    const itemTemplate = `
+                        <li class="list-item flex items-center justify-between bg-gray-700 p-3 rounded-md">
+                            <div class="flex gap-2">
+                                <span class="item-text text-gray-200">${itemText}</span>
+                                <button class="complete-btn bg-green-400 hover:bg-green-600 text-black ml-auto py-2 px-4 rounded-md transition">Complete</button>
+                                <button class="delete-btn bg-red-400 hover:bg-red-600 text-black  py-2 px-4 rounded-md transition">Delete</button>
+                            </div>
+                        </li>
+                    `;
+                    itemList.insertAdjacentHTML('beforeend', itemTemplate);
+                    itemInput.value = ''; 
+                }
+            }
+
+            if (target.classList.contains('delete-btn')) {
+                const listItem = target.closest('.list-item'); 
+                listItem.remove(); 
+            }
+
+            if (target.classList.contains('complete-btn')) {
+                const listItem = target.closest('.list-item'); 
+                const itemTextElement = listItem.querySelector('.item-text'); 
+                
+                itemTextElement.classList.toggle('line-through');
+                itemTextElement.classList.toggle('text-gray-500');
+
+                if (target.textContent === 'Complete') {
+                    target.textContent = 'Undo';
+                    target.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    target.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                } else {
+                    target.textContent = 'Complete';
+                    target.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                    target.classList.add('bg-green-500', 'hover:bg-green-600');
+                }
+            }
+        }
+        
+        listsContainer.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.classList.contains('item-input')) {
+                e.target.nextElementSibling.click();
+            }
+        });
+
+    </script>
+</body>
+</html>
